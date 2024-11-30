@@ -6,16 +6,28 @@
   <title>A-Frame Scene with Raycasters</title>
   <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
    <script src="navigate-or-open.js"></script>
-    // Paste the navigate-or-open component script here
+
 
 </head>
 <body>
   <a-scene>
+
+<a-assets>
+    <img id="sky" crossorigin="anonymous" src="Assets/nvideaskybox.png">
+</a-assets>
+
+    <!-- Skybox -->
+    <a-sky
+    src="#sky"
+    geometry="primitive: sphere; radius: 492.72; segmentsWidth: 12; segmentsHeight: 12"
+    scale="0.7 0.4 1">
+</a-sky>
+
+
     <!-- Floor -->
     <a-plane position="0 0 -5" rotation="-90 0 0" width="20" height="20" color="#7BC8A4"></a-plane>
 
-    <!-- Skybox -->
-    <a-sky color="#ECECEC"></a-sky>
+  
 
     <!-- Clickable Box -->
     <a-box position="-1 1 -3" color="#4CC3D9" class="clickable"
