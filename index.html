@@ -9,7 +9,7 @@
   <script src="https://cdn.jsdelivr.net/npm/aframe-physics-system@4.0.0/dist/aframe-physics-system.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/super-hands@4.0.1/dist/super-hands.min.js"></script>
   <script src="navigate-or-open.js"></script>
-  <!--Link to external Stylesheet for modal-->
+  <!-- Link to external stylesheet for modal -->
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -45,7 +45,10 @@
     <!-- Physics-enabled Grabbable Object -->
     <a-torus dynamic-body position="0 1.5 -5" radius="0.7" tube="0.1" color="#FFC107"
              class="grabbable"
-             navigate-or-open="grabbable: true;">
+             navigate-or-open="grabbable: true;"
+             super-hands="colliderEvent: grabStart; grabEndEvent: grabEnd;"
+             event-set__grabstart="_event: grabStart; color: #00FF00"
+             event-set__grabend="_event: grabEnd; color: #FFC107">
     </a-torus>
     <a-text value="Grabbable Object" position="0 2.5 -5" align="center"></a-text>
 
@@ -61,18 +64,17 @@
           raycaster="objects: .clickable">
         </a-cursor>
       </a-camera>
-          <!-- Hand Controllers for VR Interaction -->
-    <a-entity hand-controls="hand: left; handModelStyle: lowPoly; color: #ffcccc" 
-              position="-0.5 0 -0.5" 
-              super-hands >
     </a-entity>
-    <a-entity hand-controls="hand: right; handModelStyle: lowPoly; color: #ffcccc" 
+
+    <!-- Hand Controllers for VR Interaction -->
+    <a-entity hand-controls="hand: left; handModelStyle: lowPoly; color: #ffcccc"
+              position="-0.5 0 -0.5"
+              super-hands="colliderEvent: grabStart; grabEndEvent: grabEnd;">
+    </a-entity>
+    <a-entity hand-controls="hand: right; handModelStyle: lowPoly; color: #ffcccc"
               position="0.5 0 -0.5"
-              super-hands>
+              super-hands="colliderEvent: grabStart; grabEndEvent: grabEnd;">
     </a-entity>
-    </a-entity>
-
-
 
   </a-scene>
 </body>
