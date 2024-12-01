@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>A-Frame Scene with Raycasters</title>
   <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/donmccurdy/aframe-extras@v7.5.1/dist/aframe-extras.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/aframe-physics-system@4.0.0/dist/aframe-physics-system.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/super-hands@4.0.1/dist/super-hands.min.js"></script>
   <script src="navigate-or-open.js"></script>
@@ -61,8 +62,14 @@
         </a-cursor>
       </a-camera>
           <!-- Hand Controllers for VR Interaction -->
-    <a-entity hand-controls="hand: left" super-hands></a-entity>
-    <a-entity hand-controls="hand: right" super-hands></a-entity>
+    <a-entity hand-controls="hand: left; handModelStyle: lowPoly; color: #ffcccc" 
+              position="-0.5 0 -0.5" 
+              super-hands >
+    </a-entity>
+    <a-entity hand-controls="hand: right; handModelStyle: lowPoly; color: #ffcccc" 
+              position="0.5 0 -0.5"
+              super-hands>
+    </a-entity>
     </a-entity>
 
 
