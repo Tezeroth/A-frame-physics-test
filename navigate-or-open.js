@@ -1,10 +1,10 @@
 AFRAME.registerComponent('navigate-or-open', {
     schema: {
-        target: { type: 'string', default: '' },
-        hoverColor: { type: 'color', default: 'yellow' },
-        openInIframe: { type: 'boolean', default: false },
-        event: { type: 'string', default: 'click' },
-        grabbable: { type: 'boolean', default: false } // New: Enable grabbing in VR
+        target: { type: 'string', default: '' }, // URL to open
+        hoverColor: { type: 'color', default: 'yellow' }, // Hover effect color
+        openInIframe: { type: 'boolean', default: false }, // Whether to open in iframe
+        event: { type: 'string', default: 'click' }, // Triggering event
+        grabbable: { type: 'boolean', default: false } // Enable grabbing in VR
     },
 
     init: function () {
@@ -25,6 +25,10 @@ AFRAME.registerComponent('navigate-or-open', {
 
         // Add original property storage for hover effects
         this.storeOriginalProperties();
+
+        // Bind iframe-related methods
+        this.openIframe = this.openIframe.bind(this);
+        this.mountStyles();
     },
 
     onHoverEnter: function () {
@@ -78,41 +82,102 @@ AFRAME.registerComponent('navigate-or-open', {
 
     openIframe: function () {
         console.log("Opening iframe...");
-        const modal = document.createElement('div');
-        modal.style.position = 'fixed';
-        modal.style.top = '50%';
-        modal.style.left = '50%';
-        modal.style.transform = 'translate(-50%, -50%)';
-        modal.style.width = '80vw';
-        modal.style.height = '60vh';
-        modal.style.zIndex = '1000';
-        modal.style.backgroundColor = 'white';
-        modal.style.border = '2px solid #ccc';
-        modal.style.boxShadow = '0px 4px 6px rgba(0, 0, 0, 0.1)';
-    
-        // Close button
-        const closeButton = document.createElement('button');
-        closeButton.innerText = 'Close';
-        closeButton.style.position = 'absolute';
-        closeButton.style.top = '10px';
-        closeButton.style.right = '10px';
-        closeButton.style.zIndex = '1001';
-        closeButton.addEventListener('click', () => {
-            document.body.removeChild(modal);
-        });
-    
-        // Add iframe
-        const iframe = document.createElement('iframe');
-        iframe.src = this.data.target;
-        iframe.style.width = '100%';
-        iframe.style.height = '100%';
-        iframe.style.border = 'none';
-    
-        modal.appendChild(closeButton);
-        modal.appendChild(iframe);
-        document.body.appendChild(modal);
-    }
-    ,
+        const sceneEl = this.el.sceneEl;
+        const isVRMode = sceneEl.is('vr-mode');
+        const isARMode = sceneEl.is('ar-mode');
+        const isXRMode = isVRMode || isARMode;
+
+        if (isXRMode) {
+            console.log("Exiting XR mode to open modal.");
+            const handleExitXR = () => {
+                console.log("XR session ended. Opening modal.");
+                sceneEl.removeEventListener('exit-vr', handleExitXR);
+                let modal = this.mountHTML();
+                modal.focus();
+            };
+
+            sceneEl.addEventListener('exit-vr', handleExitXR);
+            sceneEl.exitVR();
+        } else {
+            console.log("Opening modal in desktop mode.");
+            let modal = this.mountHTML();
+            modal.focus();
+        }
+    },
+
+    mountStyles: function () {
+        const styles = document.querySelector(this.modalStyleSelector);
+
+        if (!styles) {
+            const template = `<style id="${this.modalStyleSelector}">
+                ${this.modalSelector}.page__modal {
+                    position: fixed;
+                    left: 50%;
+                    top: 50%;
+                    transform: translate(-50%, -50%);
+                    width: 90vw;
+                    height: 70vh;
+                }
+                ${this.modalSelector}.page__modal .page__modal-header {
+                    width: 100%;
+                    display: flex;
+                    flex-direction: row-reverse;
+                }
+                ${this.modalSelector}.page__modal iframe {
+                    width: 100%;
+                    height: 100%;
+                }
+            </style>`;
+            document.body.insertAdjacentHTML('beforeend', template);
+        }
+    },
+
+    closeIframe: function () {
+        this.clearGarbage();
+
+        const sceneEl = this.el.sceneEl;
+        if (this.isARMode) {
+            sceneEl.enterVR();
+            console.log("Returning to AR mode.");
+        } else {
+            sceneEl.enterVR();
+            console.log("Returning to VR mode.");
+        }
+
+        sceneEl.focus();
+    },
+
+    get modalSelector() {
+        return '#a_open_page_iframe';
+    },
+
+    get modalStyleSelector() {
+        return '#a_open_page_css';
+    },
+
+    clearGarbage: function () {
+        document.querySelectorAll(this.modalSelector).forEach((item) => item.remove());
+    },
+
+    mountHTML: function () {
+        this.clearGarbage();
+
+        const template = `<div id="a_open_page_iframe" class="page__modal">
+            <div class="page__modal-header">
+                <button class="close">Back to XR</button>
+            </div>
+            <iframe src="${this.data.target}" frameborder="0"
+                    allow="xr-spatial-tracking; gyroscope; accelerometer"
+                    sandbox="allow-same-origin allow-scripts"
+                    width="100%" height="100%">
+            </iframe>
+        </div>`;
+        document.body.insertAdjacentHTML('beforeend', template);
+
+        const modal = document.querySelector('#a_open_page_iframe');
+        modal.querySelector('.close').addEventListener('click', this.closeIframe.bind(this));
+        return modal;
+    },
 
     storeOriginalProperties: function () {
         const mesh = this.el.getObject3D('mesh');
