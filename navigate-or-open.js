@@ -16,11 +16,16 @@ AFRAME.registerComponent('navigate-or-open', {
         // Add hover and click functionality
         el.addEventListener('mouseenter', this.onHoverEnter.bind(this));
         el.addEventListener('mouseleave', this.onHoverLeave.bind(this));
-        el.addEventListener(data.event, this.onAction.bind(this));
+        el.addEventListener(data.event, (e) => {
+            e.stopPropagation(); // Prevent interference with other components
+            this.onAction();
+        });
 
-        // If grabbable, add the 'grab' class for interaction
+        // If grabbable, add the necessary attributes for interaction
         if (data.grabbable) {
-            el.classList.add('grabbable');
+            el.setAttribute('grabbable', '');
+            el.setAttribute('dynamic-body', '');
+            el.setAttribute('super-hands', '');
         }
 
         // Add original property storage for hover effects
@@ -65,6 +70,14 @@ AFRAME.registerComponent('navigate-or-open', {
     },
 
     onAction: function () {
+        const sceneEl = this.el.sceneEl;
+
+        // Avoid performing actions in VR/AR mode
+        if (sceneEl.is('vr-mode') || sceneEl.is('ar-mode')) {
+            console.log("In VR/AR mode, skipping navigate-or-open action.");
+            return;
+        }
+
         if (this.data.openInIframe) {
             this.openIframe();
         } else {
@@ -136,14 +149,8 @@ AFRAME.registerComponent('navigate-or-open', {
         this.clearGarbage();
 
         const sceneEl = this.el.sceneEl;
-        if (this.isARMode) {
-            sceneEl.enterVR();
-            console.log("Returning to AR mode.");
-        } else {
-            sceneEl.enterVR();
-            console.log("Returning to VR mode.");
-        }
-
+        sceneEl.enterVR();
+        console.log("Returning to VR mode.");
         sceneEl.focus();
     },
 
