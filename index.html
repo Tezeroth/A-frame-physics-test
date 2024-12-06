@@ -55,7 +55,7 @@
           material="color: white; shader: flat">
         </a-cursor>
       </a-camera>
-
+    </a-entity>
 
     <!-- Right hand entity -->
     <a-entity 
@@ -65,9 +65,8 @@
       sphere-collider="objects: .grabbable"
       position="0.5 1.6 -0.5">
     </a-entity>
+  </a-scene>
 
-</a-entity>
-</a-scene>
   <script>
     // Initialize Cannon.js World
     const world = new CANNON.World();
