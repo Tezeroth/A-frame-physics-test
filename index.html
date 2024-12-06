@@ -32,7 +32,7 @@
 
     <!-- Camera Rig with Movement Controls -->
     <a-entity id="rig" movement-controls="controls: gamepad, keyboard, touch" position="0 1.0 0">
-      <a-camera>
+      <a-camera look-controls position="0 0.6 0">
         <a-cursor 
           raycaster="objects: .clickable, .grabbable"
           geometry="primitive: ring"
@@ -153,6 +153,5 @@
     // Start the Update Loop
     updatePhysics();
   </script>
-  </a-scene>
 </body>
 </html>
