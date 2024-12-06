@@ -30,6 +30,30 @@
     <!-- Floor -->
     <a-plane id="ground" position="0 0 -5" rotation="-90 0 0" width="20" height="20" color="#7BC8A4" static-body></a-plane>
 
+    <!-- Camera Rig with Movement Controls -->
+    <a-entity id="rig" movement-controls="controls: gamepad, keyboard, touch" position="0 1.0 0">
+      <a-camera>
+        <a-cursor 
+          raycaster="objects: .clickable, .grabbable"
+          geometry="primitive: ring"
+          material="color: white; shader: flat">
+        </a-cursor>
+      </a-camera>
+
+
+    <!-- Right hand entity -->
+    <a-entity 
+      id="rightHand"
+      position="0.5 1.6 -0.5"
+      hand-controls="hand: right; handModelStyle: lowPoly; color: #ffcccc"
+      super-hands="colliderEvent: collisions"
+      sphere-collider="objects: .grabbable"
+     >
+    </a-entity>
+  </a-entity>
+
+
+
     <!-- Clickable Box (Navigation link) -->
     <a-box position="-1 1 -3" color="#4CC3D9" class="clickable"
            navigate-or-open="target: https://tezeroth.github.io/IframeinAframe/; openInIframe: false; hoverColor: orange;">
@@ -46,26 +70,7 @@
     <a-box id="grabbableBox" position="0 1.5 -5" color="#FFC107" class="grabbable" dynamic-body super-hands></a-box>
     <a-text value="Grabbable Object" position="0 2.5 -5" align="center"></a-text>
 
-    <!-- Camera Rig with Movement Controls -->
-    <a-entity id="rig" movement-controls="controls: gamepad, keyboard, touch" position="0 1.0 0">
-      <a-camera>
-        <a-cursor 
-          raycaster="objects: .clickable, .grabbable"
-          geometry="primitive: ring"
-          material="color: white; shader: flat">
-        </a-cursor>
-      </a-camera>
 
-
-    <!-- Right hand entity -->
-    <a-entity 
-      id="rightHand"
-      hand-controls="hand: right"
-      super-hands="colliderEvent: collisions"
-      sphere-collider="objects: .grabbable"
-      position="0.5 1.6 -0.5">
-    </a-entity>
-  </a-entity>
   </a-scene>
 
   <script>
