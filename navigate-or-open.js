@@ -24,7 +24,7 @@ AFRAME.registerComponent('navigate-or-open', {
         // If grabbable, add the necessary attributes for interaction
         if (data.grabbable) {
             el.setAttribute('grabbable', '');
-            el.setAttribute('dynamic-body', '');
+            el.setAttribute('dynamic-body', 'true');
             el.setAttribute('super-hands', '');
         }
 

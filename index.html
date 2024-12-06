@@ -3,18 +3,18 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>A-Frame Scene with Raycasters</title>
+  <title>A-Frame Scene with Cannon.js</title>
   <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/gh/donmccurdy/aframe-extras@v7.5.1/dist/aframe-extras.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/aframe-physics-system@4.0.0/dist/aframe-physics-system.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/super-hands@3.0.4/dist/super-hands.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/donmccurdy/aframe-extras@7.5.2/dist/aframe-extras.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/cannon-es@1.4.0/dist/cannon-es.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/aframe-physics-extras/dist/aframe-physics-extras.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/aframe-physics-system@4.0.0/dist/aframe-physics-system.min.js"></script>
   <script src="navigate-or-open.js"></script>
-  <!-- Link to external stylesheet for modal -->
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <a-scene physics="gravity: -9.8">
-
+  <a-scene physics="debug: false">
     <!-- Preloaded assets -->
     <a-assets>
       <img id="sky" crossorigin="anonymous" src="Assets/nvideaskybox.png">
@@ -28,7 +28,7 @@
     </a-sky>
 
     <!-- Floor -->
-    <a-plane static-body position="0 0 -5" rotation="-90 0 0" width="20" height="20" color="#7BC8A4"></a-plane>
+    <a-plane id="ground" position="0 0 -5" rotation="-90 0 0" width="20" height="20" color="#7BC8A4" static-body></a-plane>
 
     <!-- Clickable Box (Navigation link) -->
     <a-box position="-1 1 -3" color="#4CC3D9" class="clickable"
@@ -43,44 +43,111 @@
     <a-text value="Open Shopify" position="2 2 -3" align="center"></a-text>
 
     <!-- Physics-enabled Grabbable Object -->
-    <a-box 
-    grabbable
-    dynamic-body
-    position="0 1.5 -5"
-    color="#FFC107"
-    class="grabbable">
- </a-box>
+    <a-box id="grabbableBox" position="0 1.5 -5" color="#FFC107" class="grabbable" dynamic-body super-hands></a-box>
     <a-text value="Grabbable Object" position="0 2.5 -5" align="center"></a-text>
 
-    <!-- Camera Rig for movement and VR controls -->
-    <a-entity id="rig" movement-controls="controls: gamepad, keyboard" position="0 1.0 0">
-      <!-- Camera -->
+    <!-- Camera Rig with Movement Controls -->
+    <a-entity id="rig" movement-controls="controls: gamepad, keyboard, touch" position="0 1.0 0">
       <a-camera>
-        <!-- Cursor for interacting with objects -->
-        <a-cursor
-          position="0 0 -1"
-          geometry="primitive: sphere; radius: 0.005; segmentsWidth: 4; segmentsHeight: 4"
-          material="color: #0FFF00; shader: flat; opacity: 0.5"
-          raycaster="objects: .clickable">
+        <a-cursor 
+          raycaster="objects: .clickable, .grabbable"
+          geometry="primitive: ring"
+          material="color: white; shader: flat">
         </a-cursor>
       </a-camera>
-          <!-- Hand Controllers for VR Interaction -->
-    <a-entity hand-controls="hand: left; handModelStyle: lowPoly; color: #ffcccc"
-              position="-0.5 0 -0.5"
-              super-hands="colliderEvent: grabStart; grabEndEvent: grabEnd;">
-    </a-entity>
-    <!-- the right hand is the updated version-->
+
+
+    <!-- Right hand entity -->
     <a-entity 
-    id="rightHand"
-    position="0.5 -0.5 -0.5"
-    hand-controls="hand: right; handModelStyle: lowPoly; color: #ffcccc"
-    super-hands
-    sphere-collider="objects: .grabbable">
- </a-entity>
+      id="rightHand"
+      hand-controls="hand: right"
+      super-hands="colliderEvent: collisions"
+      sphere-collider="objects: .grabbable"
+      position="0.5 1.6 -0.5">
     </a-entity>
 
-
-
+</a-entity>
+</a-scene>
+  <script>
+    // Initialize Cannon.js World
+    const world = new CANNON.World();
+    world.gravity.set(0, -9.8, 0);
+  
+    // Create Ground (Static Body)
+    const groundBody = new CANNON.Body({
+      mass: 0,
+      shape: new CANNON.Plane(),
+    });
+    groundBody.quaternion.setFromEuler(-Math.PI / 2, 0, 0);
+    world.addBody(groundBody);
+  
+    // Create Grabbable Box (Dynamic Body)
+    const boxShape = new CANNON.Box(new CANNON.Vec3(0.5, 0.5, 0.5));
+    const boxBody = new CANNON.Body({
+      mass: 1,
+      shape: boxShape,
+    });
+    boxBody.position.set(0, 1.5, -5);
+    world.addBody(boxBody);
+  
+    // Link Box to A-Frame Entity
+    const boxEl = document.querySelector('#grabbableBox');
+    boxEl.object3D.position.copy(boxBody.position);
+  
+    // Variables to Track Grabbing
+    let isGrabbed = false;
+    let previousPosition = new CANNON.Vec3();
+    let previousVelocity = new CANNON.Vec3();
+  
+    // Add Event Listeners for Grab and Release
+    boxEl.addEventListener('grab-start', (e) => {
+      console.log('Box grabbed');
+      isGrabbed = true;
+      previousPosition.copy(boxBody.position);
+      previousVelocity.copy(boxBody.velocity);
+      
+      boxBody.mass = 0;
+      boxBody.velocity.set(0, 0, 0);
+      boxBody.angularVelocity.set(0, 0, 0);
+    });
+  
+    boxEl.addEventListener('grab-end', (e) => {
+      console.log('Box released');
+      isGrabbed = false;
+      boxBody.mass = 1;
+      
+      const hand = document.querySelector('#rightHand');
+      if (hand) {
+        const handPosition = hand.object3D.position;
+        const releaseVelocity = new CANNON.Vec3();
+        releaseVelocity.copy(handPosition).vsub(previousPosition).scale(60);
+        
+        boxBody.velocity.copy(releaseVelocity);
+      }
+    });
+  
+    // Update Loop for Physics Simulation
+    function updatePhysics() {
+      world.step(1 / 60);
+  
+      if (isGrabbed) {
+        const hand = document.querySelector('#rightHand');
+        const handPosition = hand.object3D.position;
+        const handQuaternion = hand.object3D.quaternion;
+  
+        boxBody.position.copy(handPosition);
+        boxBody.quaternion.copy(handQuaternion);
+      } else {
+        boxEl.object3D.position.copy(boxBody.position);
+        boxEl.object3D.quaternion.copy(boxBody.quaternion);
+      }
+  
+      requestAnimationFrame(updatePhysics);
+    }
+  
+    // Start the Update Loop
+    updatePhysics();
+  </script>
   </a-scene>
 </body>
 </html>
