@@ -43,13 +43,13 @@
     <a-text value="Open Shopify" position="2 2 -3" align="center"></a-text>
 
     <!-- Physics-enabled Grabbable Object -->
-    <a-box dynamic-body position="0 1.5 -5" radius="0.7" tube="0.1" color="#FFC107"
-             class="grabbable"
-             navigate-or-open="grabbable: true;"
-             super-hands="colliderEvent: grabStart; grabEndEvent: grabEnd;"
-             event-set__grabstart="_event: grabStart; color: #00FF00"
-             event-set__grabend="_event: grabEnd; color: #FFC107">
-    </a-box>
+    <a-box 
+    grabbable
+    dynamic-body
+    position="0 1.5 -5"
+    color="#FFC107"
+    class="grabbable">
+ </a-box>
     <a-text value="Grabbable Object" position="0 2.5 -5" align="center"></a-text>
 
     <!-- Camera Rig for movement and VR controls -->
@@ -75,8 +75,8 @@
     position="0.5 -0.5 -0.5"
     hand-controls="hand: right; handModelStyle: lowPoly; color: #ffcccc"
     super-hands
-    sphere-collider="objects: a-box">
-</a-entity>
+    sphere-collider="objects: .grabbable">
+ </a-entity>
     </a-entity>
 
 
